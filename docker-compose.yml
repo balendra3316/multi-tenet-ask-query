@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: aegis_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: B@lendr@123
+      POSTGRES_DB: rag_multitenant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rag_multitenant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis_rag_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:B%40lendr%40123@db:5432/rag_multitenant?schema=public
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
