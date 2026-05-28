@@ -2,11 +2,11 @@
   "name": "infoware",
   "version": "1.0.0",
   "main": "index.js",
- "scripts": {
-  "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-  "build": "tsc",
-  "start": "node dist/server.ts"
-},
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -16,9 +16,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-validator": "^7.3.2",
     "multer": "^2.1.1",
     "pdf-parse": "^2.4.5",
-    "pg": "^8.21.0"
+    "pg": "^8.21.0",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

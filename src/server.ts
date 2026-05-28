@@ -5,20 +5,28 @@ import { pool } from "./models/db";
 import { initializeDatabase } from "./models/db_init";
 import tenantRouter from "./api/routes";
 import path from "path";
+import { corsOptions } from "./config";
+import { requestLogger, errorHandler, notFoundHandler, apiLimiter } from "./middleware";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// 1. Request logging middleware
+app.use(requestLogger);
+
+// 2. Production-ready CORS integration
+app.use(cors(corsOptions));
+
+// 3. Built-in body parsers
 app.use(express.json());
+
+// 4. Rate Limiter for all routes to prevent resource abuse
+app.use(apiLimiter);
 
 // Serve static frontend assets from public directory
 app.use(express.static(path.join(__dirname, "../public")));
-
-// Register all Multi-Tenant RAG API routes
-app.use("/", tenantRouter);
 
 // Health check endpoint
 app.get("/health", async (req, res) => {
@@ -32,19 +40,22 @@ app.get("/health", async (req, res) => {
   }
 });
 
-// Global Error Handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("❌ Unhandled Express Error:", err);
-  res.status(500).json({ error: "Something went wrong on the server." });
-});
+// Register all Multi-Tenant RAG API routes
+app.use("/", tenantRouter);
+
+// 5. 404 Route Not Found Handler
+app.use(notFoundHandler);
+
+// 6. Global Error Handler
+app.use(errorHandler);
 
 // Self-initializing server on startup
 async function startServer() {
   try {
-    // 1. Initialize schema and extensions
+    // Initialize schema and extensions
     await initializeDatabase();
 
-    // 2. Start listening
+    // Start listening
     app.listen(PORT, () => {
       console.log(
         `🚀 Multi-Tenant RAG Backend & Frontend running on http://localhost:${PORT}`
